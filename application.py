@@ -4,9 +4,16 @@ from threading import Thread
 import time, json, os
 
 
-application = Flask(__name__)
+application            = Flask(__name__)
 application.secret_key = "my handle is root"
-twitter = Twitter(auth = OAuth("3284409438-1fi2IudIB4ViaXpvREuYwAAe8VK0iB8PER1qUiE", "FeMEtOoL25hZNVNrRagNSxxwKhPILmrtxVexUdI4dEtaw", "YjkfScgxRbL29b0lY5mbgQtyG", "te4u9k3GNZlv5nELUpSa70wlfPLvTxVQ5flQFKaOImirEGA900"))
+config                 = {
+						  'consumer_key':'YjkfScgxRbL29b0lY5mbgQtyG', 
+						  'consumer_sec':'te4u9k3GNZlv5nELUpSa70wlfPLvTxVQ5flQFKaOImirEGA900',
+						  'access_token':'3284409438-1fi2IudIB4ViaXpvREuYwAAe8VK0iB8PER1qUiE', 
+						  'access_sec':'FeMEtOoL25hZNVNrRagNSxxwKhPILmrtxVexUdI4dEtaw'
+						 }
+
+twitter                = Twitter(auth = OAuth(config['access_token'], config['access_sec'], config['consumer_key'], config['consumer_sec']))
 
 
 global user_data
@@ -24,12 +31,14 @@ def fetch_tweets_thread(latitude, longitude):
 
 	max_range    = 800 	# Radius in Km		
 	last_id      = None # Last User ID
-	user_key     = str(int(latitude)) + str(int(longitude)) # Key used in dictionary
+	curr_res     = 0
+	total_res    = 100
+	user_key     = str(int(latitude)) + str(int(longitude)) # Generate Key used in dictionary
 
 	if user_data.has_key(user_key)==False:
 		user_data[user_key] = []
 
-	while True:
+	while curr_res<total_res:
 
 		query = twitter.search.tweets(q = "", geocode = "%f,%f,%dkm" % (latitude, longitude, max_range), max_id = last_id)
 
@@ -44,6 +53,7 @@ def fetch_tweets_thread(latitude, longitude):
 				latitude  = result["geo"]["coordinates"][0]
 				longitude = result["geo"]["coordinates"][1]
 				row       = [ user, text, latitude, longitude ]
+				curr_res  = curr_res + 1
 
 				user_data[user_key].append(row)
 
@@ -64,9 +74,11 @@ def index():
 #-----------------------------------------------------------------------
 @application.route('/markers', methods=['POST'])
 def getUpdatedPositions():
+	# Fetch data from JSON Request
 	latitude  = request.json['lat'] 
 	longitude = request.json['lng']
-	user_key  = str(int(latitude)) + str(int(longitude))
+
+	user_key  = str(int(latitude)) + str(int(longitude)) # Generate Key used in dictionary
 
 	if user_data.has_key(user_key)==False:
 		user_data[user_key] = []
