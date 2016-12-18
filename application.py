@@ -29,7 +29,7 @@ def fetch_tweets_thread(latitude, longitude):
 
 	global user_data
 
-	max_range    = 800 	# Radius in Km		
+	max_range    = 100 	# Radius in Km		
 	last_id      = None # Last User ID
 	curr_res     = 0
 	total_res    = 100
