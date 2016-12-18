@@ -1,7 +1,7 @@
 from twitter import *
 from flask import Flask, render_template, request
 from threading import Thread
-import time, json
+import time, json, os
 
 
 application = Flask(__name__)
@@ -97,4 +97,5 @@ def find_tweets():
 
 
 if __name__=='__main__':
-	application.run(debug=True)
+	port = int(os.environ.get('PORT', 5000))
+	application.run(host='0.0.0.0', port=port)
