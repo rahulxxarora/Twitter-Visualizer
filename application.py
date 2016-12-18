@@ -21,7 +21,7 @@ def fetch_tweets_thread(latitude, longitude):
 
 	global user_data
 
-	max_range    = 500 	# Distance in Radius		
+	max_range    = 800 	# Radius in Km		
 	last_id      = None # Last User ID
 	user_key     = str(int(latitude)) + str(int(longitude)) # Key used in dictionary
 
@@ -33,9 +33,9 @@ def fetch_tweets_thread(latitude, longitude):
 		query = twitter.search.tweets(q = "", geocode = "%f,%f,%dkm" % (latitude, longitude, max_range), max_id = last_id)
 
 		for result in query["statuses"]:
-			#-----------------------------------------------------------------------
+			#----------------------------------------------------------------------
 			# only process a result if it has a geolocation
-			#-----------------------------------------------------------------------
+			#----------------------------------------------------------------------
 			if result["geo"]:
 				user      = result["user"]["screen_name"]
 				text      = result["text"]
