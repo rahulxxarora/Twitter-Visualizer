@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	    <title>Twitter Visualizer</title>
+	    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+	    <meta charset="utf-8">
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+	    <style>
+	    	#map {
+	        	height: 80%;
+	      	}
+	      	html, body {
+	        	height: 100%;
+	        	margin: 0;
+	        	padding: 0;
+	      	}
+	    </style>
+  </head>
+
+  <body>
+  	<div id="map"></div>
+    
+    <script>
+
+    	var map;
+    	var latVar, lngVar;
+
+    	function initMap() {
+	      	map = new google.maps.Map(document.getElementById('map'), {
+	        	center: {lat: -34.397, lng: 150.644},
+	          	zoom: 6
+	        });
+        
+	        if (navigator.geolocation) {
+	        	navigator.geolocation.getCurrentPosition(function(position) {
+	        		latVar = position.coords.latitude;
+	        		lngVar = position.coords.longitude;
+
+	            	var pos = {
+	              		lat: latVar,
+	              		lng: lngVar
+	            	};
+
+		            var marker = new google.maps.Marker({
+		                position: new google.maps.LatLng(latVar, lngVar),
+		                title: "Your Location",
+		                icon : "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+		                map:map
+		            }); 
+
+		            var infowindow = new google.maps.InfoWindow({
+			        	content: "Your Location!"
+			        });
+
+			        marker.addListener('click', function() {
+          				infowindow.open(map, marker);
+        			});
+
+		            map.setCenter(pos);
+
+		            $.ajax({
+		            	dataType: "json",
+		              	type: "POST",
+		              	contentType: "application/json",
+		              	url: "/post_position",
+		              	data: JSON.stringify(pos),
+		              	success: function(response) {
+		                	console.log(response);
+		              	},
+		              	error: function(response) {
+		                	console.log(response);
+		              	}
+		            });
+
+	          	});
+	        } 
+      	}
+
+		setInterval(function() {
+			var latVar, lngVar;
+
+			if (navigator.geolocation) {
+	        	navigator.geolocation.getCurrentPosition(function(position) {
+	        		latVar = position.coords.latitude;
+	        		lngVar = position.coords.longitude;
+
+					var infowindow = new google.maps.InfoWindow();
+					var coords     = {'lat':latVar,'lng':lngVar};
+					var post_data  = JSON.stringify(coords);
+
+		    		$.ajax({ url:"markers", type:"POST", data:post_data, success: function(response) {
+
+		    			var json_obj  = response['data'];
+		    			var start_pos = 0;
+
+		    			if(json_obj.length>100) {
+		    				start_pos = json_obj.length-100;
+		    			}
+
+		    			for(var i=start_pos;i<json_obj.length;i++) {
+
+		    				var marker = new google.maps.Marker({
+				                position: new google.maps.LatLng(json_obj[i][2], json_obj[i][3]),
+				                title: "Tweet Location",
+				                icon : "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+				                map:map
+				            }); 
+
+				            google.maps.event.addListener(marker, 'click', (function (marker, i) {
+				                return function () {
+				                    infowindow.setContent("Tweet By : "+json_obj[i][0]+" -> <b>"+json_obj[i][1]);
+				                    infowindow.open(map, marker);
+				                }
+				            })(marker, i)); 
+		    			}
+		    		}, dataType: "json", contentType: "application/json"});
+	          	});
+	        } 
+		}, 10000);
+
+    </script>
+
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDsZXf_VZGFx3WuvqakBT3kJuPOBe0Hkqo&callback=initMap">
+    </script>
+
+  </body>
+</html>
