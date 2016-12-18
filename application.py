@@ -1,10 +1,11 @@
-#from twitter import *
-from flask import Flask, render_template, request, json
+from twitter import *
+from flask import Flask, render_template, request
 from threading import Thread
 import time, json
 
 
 application = Flask(__name__)
+application.secret_key = "my handle is root"
 twitter = Twitter(auth = OAuth("3284409438-1fi2IudIB4ViaXpvREuYwAAe8VK0iB8PER1qUiE", "FeMEtOoL25hZNVNrRagNSxxwKhPILmrtxVexUdI4dEtaw", "YjkfScgxRbL29b0lY5mbgQtyG", "te4u9k3GNZlv5nELUpSa70wlfPLvTxVQ5flQFKaOImirEGA900"))
 
 
@@ -89,8 +90,8 @@ def find_tweets():
 	latitude  = request.json['lat'] 
 	longitude = request.json['lng']
 	# Fire a new thread
-	#thread_obj = Thread(target = fetch_tweets_thread, args = (latitude, longitude, ))
-	#thread_obj.start()
+	thread_obj = Thread(target = fetch_tweets_thread, args = (latitude, longitude, ))
+	thread_obj.start()
 
 	return 'Success'
 
